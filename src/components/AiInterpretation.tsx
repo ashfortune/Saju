@@ -141,7 +141,7 @@ export default function AiInterpretation({ profile, result }: AiInterpretationPr
 
       // 최신 @google/genai SDK 호출 방식 (models 객체 통해 직접 호출)
       const aiResponse = await genAIClient.models.generateContent({
-        model: 'gemma-4-26b-a4b-it', // <-- 공식 지원 형식으로 변경
+        model: 'gemma-4-31b-a4b-it', // <-- 31b 버전
         contents: prompt
       });
 
@@ -183,8 +183,8 @@ export default function AiInterpretation({ profile, result }: AiInterpretationPr
                   key={p.id}
                   onClick={() => setSelectedPersonaId(p.id)}
                   className={`flex flex-col text-left p-4 rounded-xl border transition-all ${selectedPersonaId === p.id
-                      ? 'border-stone-900 bg-white shadow-md ring-1 ring-stone-900'
-                      : 'border-stone-200 bg-white hover:border-stone-300'
+                    ? 'border-stone-900 bg-white shadow-md ring-1 ring-stone-900'
+                    : 'border-stone-200 bg-white hover:border-stone-300'
                     }`}
                 >
                   <div className={`p-2 rounded-lg mb-3 w-fit ${selectedPersonaId === p.id ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600'
