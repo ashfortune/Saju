@@ -218,7 +218,7 @@ export default function ResultDashboard({ onBack }: ResultDashboardProps) {
           </div>
         </motion.section>
 
-        {/* 해석 리포트 */}
+        {/* 해석 리포트 (기질 분석) */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -239,6 +239,33 @@ export default function ResultDashboard({ onBack }: ResultDashboardProps) {
               <p className="text-sm text-stone-600 mb-3">{(elementsData as any)[currentResult.dayMaster.element].pros}</p>
               <h3 className="font-bold text-sm mb-2">보완할 점</h3>
               <p className="text-sm text-stone-600">{(elementsData as any)[currentResult.dayMaster.element].cons}</p>
+            </div>
+          </div>
+
+          {/* 개념 해설 가이드 추가 */}
+          <div className="pt-6 border-t border-stone-100">
+            <div className="bg-stone-900 text-white rounded-2xl p-5 relative overflow-hidden group">
+               <div className="relative z-10">
+                 <div className="flex items-center gap-2 mb-2 text-stone-300">
+                    <span className="text-[10px] font-bold uppercase tracking-widest bg-white/10 px-2 py-1 rounded">Traditional Theory</span>
+                 </div>
+                 <h3 className="font-serif font-bold text-lg mb-2">원국(原局)과 조후(調候)의 상관관계</h3>
+                 <p className="text-xs text-stone-300 leading-relaxed mb-4">
+                  나의 기질({currentResult.dayMaster.element})은 변하지 않는 사주의 <strong>원국(본질)</strong>이며, 
+                  오행 분포에서 강한 {chartData[0].name} 기운은 원국에 영향을 주는 <strong>조후(환경)</strong>입니다.
+                 </p>
+                 <div className="p-3 bg-white/10 rounded-xl border border-white/5 backdrop-blur-sm">
+                    <p className="text-[11px] text-white/90 leading-relaxed italic">
+                      "본 사주는 <strong>{currentResult.dayMaster.element}의 원형질</strong>을 유지하되, 
+                      외부 환경인 <strong>{chartData[0].name}의 강력한 에너지</strong>에 의해 발현 양상이 결정됩니다. 
+                      본질과 조후의 균형을 분석하는 것이 정밀 진단의 핵심입니다."
+                    </p>
+                 </div>
+               </div>
+               {/* 장식용 아이콘 */}
+               <div className="absolute -right-4 -bottom-4 opacity-10 rotate-12 transition-transform group-hover:scale-110">
+                  <span className="text-8xl">🏮</span>
+               </div>
             </div>
           </div>
         </motion.section>

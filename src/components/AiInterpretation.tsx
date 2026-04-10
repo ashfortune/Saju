@@ -1,10 +1,61 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
-import { Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Sparkles, AlertCircle, RefreshCw, Trophy, Briefcase, Heart, BookOpen, ChevronRight } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import Markdown from 'react-markdown';
 import { UserProfile } from '../store/useSajuStore';
 import { SajuResult } from '../lib/saju';
+
+type PersonaType = 'total' | 'money' | 'career' | 'love';
+
+interface Persona {
+  id: PersonaType;
+  name: string;
+  title: string;
+  specialty: string;
+  icon: React.ReactNode;
+  description: string;
+  color: string;
+}
+
+const PERSONAS: Persona[] = [
+  {
+    id: 'total',
+    name: '',
+    title: '균형 분석 시스템',
+    specialty: '사주 원국 및 조후 분석',
+    icon: <BookOpen size={20} />,
+    description: '전체적인 오행의 균형과 기질적 특성을 도출합니다.',
+    color: 'stone'
+  },
+  {
+    id: 'money',
+    name: '',
+    title: '재성 흐름 분석 모듈',
+    specialty: '경제적 성취 및 유동성계측',
+    icon: <Trophy size={20} />,
+    description: '재성(財星)의 흐름과 금전적 성취 가능성을 연산합니다.',
+    color: 'amber'
+  },
+  {
+    id: 'career',
+    name: '',
+    title: '관성 성취 연산 로직',
+    specialty: '사회적 지위 및 직업 적성',
+    icon: <Briefcase size={20} />,
+    description: '관성(官星) 기반의 조직 적응력과 명예운을 분석합니다.',
+    color: 'blue'
+  },
+  {
+    id: 'love',
+    name: '',
+    title: '인성 유대 지표 모델',
+    specialty: '인간관계 및 사회적 유대',
+    icon: <Heart size={20} />,
+    description: '인성(印星)과 귀인운을 바탕으로 사회적 유대를 측정합니다.',
+    color: 'rose'
+  }
+];
 
 interface AiInterpretationProps {
   profile: UserProfile;
@@ -16,8 +67,10 @@ export default function AiInterpretation({ profile, result }: AiInterpretationPr
   const [interpretation, setInterpretation] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [selectedPersonaId, setSelectedPersonaId] = useState<PersonaType>('total');
 
-  console.log("현재 로드된 키:", import.meta.env.VITE_GEMINI_API_KEY);
+  const selectedPersona = PERSONAS.find(p => p.id === selectedPersonaId)!;
+
   const generateInterpretation = async () => {
     if (!import.meta.env.VITE_GEMINI_API_KEY) {
       setError('API 키가 설정되지 않았습니다. .env.local 파일을 확인해주세요.');
@@ -57,13 +110,21 @@ export default function AiInterpretation({ profile, result }: AiInterpretationPr
       `;
 
       const prompt = `
-        당신은 20년 경력의 명리학자이자 사주 상담가입니다. 
-        입력된 사주 데이터를 바탕으로 이 사람의 전반적인 성향, 재물운, 직업운, 연애운을 심층 분석해주세요.
+        당신은 사주 명리학 정밀 분석 시스템 [${selectedPersona.title}]입니다.
+        이번 분석은 [${selectedPersona.specialty}] 데이터 전용 모드로 진행됩니다.
         
-        지침:
-        1. 말투는 따뜻하고 신뢰감 있는 상담가 어조(~입니다, ~하셔도 좋습니다)를 유지하세요.
-        2. 오행의 균형(과다하거나 부족한 오행)을 중심으로 개운법(보완 방법)을 포함해주세요.
-        3. 마크다운(Markdown)을 사용하여 가독성 있게 작성하되, 섹션별로 이모지를 적절히 섞어주세요.
+        입력된 데이터를 고전 명리 이론에 근거하여 기술적이고 논리적으로 분석해주세요.
+        
+        분석 모듈별 중점 연산 항목:
+        ${selectedPersonaId === 'total' ? '- 원국의 조후(調候) 균형 및 오행 상생상극의 흐름에 대한 종합 지표를 도출하세요.' : ''}
+        ${selectedPersonaId === 'money' ? '- 재성(財星)의 통근(通根) 여부 및 용신(用神)을 활용한 경제적 유동성을 계측하세요.' : ''}
+        ${selectedPersonaId === 'career' ? '- 관성(官星)의 건왕함과 적성 지표를 대조하여 사회적 성취 경로를 도출하세요.' : ''}
+        ${selectedPersonaId === 'love' ? '- 인성(印星)의 분포 및 기운의 유통을 바탕으로 사회적 유대 및 귀인운 지표를 연산하세요.' : ''}
+
+        분석 지침:
+        1. 말투는 객관적이며 신뢰감 있는 전문가 문체(~함, ~로 판단됨, ~으로 분석됨)를 지향하세요.
+        2. "조언", "위로"와 같은 주관적 표현보다 "데이터 상의 경향성", "명리학적 지표"와 같은 객관적 어휘를 사용하세요.
+        3. 마크다운을 활용해 가독성 있게 작성하되, 시스템 리포트 느낌의 정밀한 레이아웃을 구성하세요.
         
         사주 데이터:
         ${sajuData}
@@ -105,22 +166,49 @@ export default function AiInterpretation({ profile, result }: AiInterpretationPr
         </h2>
       </div>
 
-      {/* 초기 상태: 분석 버튼 */}
+      {/* 초기 상태: 분석 모듈 선택 및 시스템 가동 버튼 */}
       {!interpretation && !isLoading && !error && (
-        <div className="text-center py-10 px-4 bg-stone-50 rounded-xl">
-          <p className="text-stone-600 text-sm leading-relaxed mb-6">
-            명리학자 페르소나를 가진 AI가 {profile.name}님의 <br />
-            <strong>8글자 팔자와 오행</strong>을 분석하여 맞춤형 풀이를 제공합니다.
-          </p>
-          <button
-            onClick={generateInterpretation}
-            className="group relative px-8 py-4 bg-stone-900 text-white rounded-2xl font-semibold text-base overflow-hidden transition-all hover:bg-stone-800 active:scale-95"
-          >
-            <span className="relative z-10 flex items-center gap-2">
-              <Sparkles size={18} className="group-hover:animate-pulse" />
-              AI 풀이 시작하기
-            </span>
-          </button>
+        <div className="space-y-6">
+          <div className="bg-stone-50 p-4 rounded-xl">
+             <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-4 px-1">정밀 분석 모듈 선택</p>
+             <div className="grid grid-cols-2 gap-3">
+                {PERSONAS.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setSelectedPersonaId(p.id)}
+                    className={`flex flex-col text-left p-4 rounded-xl border transition-all ${
+                      selectedPersonaId === p.id 
+                      ? 'border-stone-900 bg-white shadow-md ring-1 ring-stone-900' 
+                      : 'border-stone-200 bg-white hover:border-stone-300'
+                    }`}
+                  >
+                    <div className={`p-2 rounded-lg mb-3 w-fit ${
+                      selectedPersonaId === p.id ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600'
+                    }`}>
+                      {p.icon}
+                    </div>
+                    <h3 className="text-xs font-bold text-stone-900 mb-1">{p.title}</h3>
+                    <p className="text-[10px] text-stone-500 leading-tight">{p.specialty}</p>
+                  </button>
+                ))}
+             </div>
+          </div>
+
+          <div className="text-center py-4 px-4">
+            <p className="text-stone-500 text-[10px] leading-relaxed mb-6 font-mono">
+              SYSTEM: [{selectedPersona.title}] 모듈 대기 중... <br />
+              전통 명리 알고리즘 기반 정밀 연산을 시작합니다.
+            </p>
+            <button
+              onClick={generateInterpretation}
+              className="group relative w-full py-4 bg-stone-900 text-white rounded-2xl font-bold text-base overflow-hidden transition-all hover:bg-stone-800 active:scale-95 shadow-xl"
+            >
+              <span className="relative z-10 flex items-center justify-center gap-2 tracking-widest">
+                <Sparkles size={20} className="group-hover:animate-pulse" />
+                정밀 분석 시스템 가동
+              </span>
+            </button>
+          </div>
         </div>
       )}
 

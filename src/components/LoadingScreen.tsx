@@ -26,7 +26,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
         transition={{ duration: 0.5 }}
         className="text-xl font-serif mb-2"
       >
-        만세력을 분석 중입니다...
+        정밀 만세력 연산 중...
       </motion.h2>
       <motion.p
         initial={{ opacity: 0 }}
@@ -34,7 +34,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
         transition={{ duration: 0.5, delay: 0.5 }}
         className="text-stone-400 text-sm"
       >
-        우주의 기운을 모으는 중
+        오행 상생상극 데이터 분석 및 고전 요인 대조
       </motion.p>
     </div>
   );
