@@ -124,7 +124,125 @@ export default function ResultDashboard({ onBack }: ResultDashboardProps) {
         {/* 팔자 카드 */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
-... (생략) ...
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-5 rounded-2xl shadow-sm border border-stone-100"
+        >
+          <h2 className="text-lg font-bold mb-4 font-serif">사주팔자 (四柱八字)</h2>
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+            {/* 천간 (상단) */}
+            {renderCharBox(currentResult.time.stem, '시주')}
+            {renderCharBox(currentResult.day.stem, '일주', true)}
+            {renderCharBox(currentResult.month.stem, '월주')}
+            {renderCharBox(currentResult.year.stem, '년주')}
+            
+            {/* 지지 (하단) */}
+            {renderCharBox(currentResult.time.branch, '')}
+            {renderCharBox(currentResult.day.branch, '', true)}
+            {renderCharBox(currentResult.month.branch, '')}
+            {renderCharBox(currentResult.year.branch, '')}
+          </div>
+          <p className="text-xs text-stone-500 mt-4 text-center">
+            * 일주(두 번째 열)의 상단 글자가 본인을 상징하는 '일간'입니다.
+          </p>
+        </motion.section>
+
+        {/* 오행 분포 및 에너지 리포트 */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white p-5 rounded-2xl shadow-sm border border-stone-100"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold font-serif">오행 에너지 분석</h2>
+            <span className="text-[10px] text-stone-400">Total 8 Point</span>
+          </div>
+
+          <div className="space-y-4">
+            {chartData.sort((a, b) => b.value - a.value).map((item) => {
+              const info = (elementsData as any)[item.name];
+              const getStatus = (val: number) => {
+                if (val >= 4) return { label: '강함', color: 'bg-red-50 text-red-600 border-red-100' };
+                if (val >= 2) return { label: '균형', color: 'bg-green-50 text-green-600 border-green-100' };
+                if (val === 1) return { label: '약함', color: 'bg-amber-50 text-amber-600 border-amber-100' };
+                return { label: '부족', color: 'bg-stone-50 text-stone-400 border-stone-100' };
+              };
+              const status = getStatus(item.value);
+              
+              return (
+                <div key={item.name} className="group">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></span>
+                       <span className="font-bold text-sm">{item.name}</span>
+                       <span className="text-[11px] text-stone-400 font-normal">{info.desc}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-stone-600">{item.value}개</span>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full border ${status.color}`}>
+                        {status.label}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(item.value / 8) * 100}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: item.color }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 에너지 총평 */}
+          <div className="mt-6 p-4 bg-stone-50 rounded-xl border border-stone-100">
+            <h3 className="text-xs font-bold text-stone-500 mb-2 uppercase tracking-wider">나를 이끄는 핵심 에너지</h3>
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-white shadow-sm">
+                <span className="text-xl">{(elementsData as any)[chartData[0].name].icon || '✨'}</span>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-stone-900">
+                  {chartData[0].name} 기운 ({ (elementsData as any)[chartData[0].name].desc })
+                </p>
+                <p className="text-xs text-stone-600 mt-1 leading-relaxed">
+                  {currentProfile.name}님은 사주에서 <strong>{chartData[0].name}</strong>의 에너지가 가장 뚜렷합니다. 
+                  주요 강점은 <strong>{(elementsData as any)[chartData[0].name].pros.split(',')[0]}</strong>입니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* 해석 리포트 */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white p-5 rounded-2xl shadow-sm border border-stone-100 space-y-6"
+        >
+          <div>
+            <h2 className="text-lg font-bold mb-3 font-serif flex items-center gap-2">
+              <span className="w-1.5 h-6 bg-stone-900 rounded-full inline-block"></span>
+              나의 타고난 기질
+            </h2>
+            <p className="text-stone-700 leading-relaxed">
+              {currentProfile.name}님은 <strong>{currentResult.dayMaster.element}</strong>의 기운을 타고났습니다. 
+              {currentResult.dayMaster.name}일간은 {(elementsData as any)[currentResult.dayMaster.element].desc}을 상징합니다.
+            </p>
+            <div className="mt-4 p-4 bg-stone-50 rounded-xl">
+              <h3 className="font-bold text-sm mb-2">장점</h3>
+              <p className="text-sm text-stone-600 mb-3">{(elementsData as any)[currentResult.dayMaster.element].pros}</p>
+              <h3 className="font-bold text-sm mb-2">보완할 점</h3>
+              <p className="text-sm text-stone-600">{(elementsData as any)[currentResult.dayMaster.element].cons}</p>
+            </div>
+          </div>
+        </motion.section>
+
         {/* AI 심층 사주 풀이 */}
         <AiInterpretation profile={currentProfile} result={currentResult} />
 
