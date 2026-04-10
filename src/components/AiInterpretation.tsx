@@ -79,6 +79,7 @@ export default function AiInterpretation({ profile, result }: AiInterpretationPr
 
     setIsLoading(true);
     setError('');
+    setInterpretation('');
 
     try {
       const apiKeyFromEnv = import.meta.env.VITE_GEMINI_API_KEY;

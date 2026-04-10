@@ -21,11 +21,23 @@ const ELEMENT_COLORS: Record<string, string> = {
 };
 
 export default function ResultDashboard({ onBack }: ResultDashboardProps) {
-  const { currentProfile, currentResult, addProfile } = useSajuStore();
+  const { currentProfile, currentResult, addProfile, profiles } = useSajuStore();
   const captureRef = useRef<HTMLDivElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const isAlreadySaved = profiles.some(p => 
+    p.name === currentProfile?.name && 
+    p.birthDate === currentProfile?.birthDate && 
+    p.birthTime === currentProfile?.birthTime
+  );
   
   if (!currentProfile || !currentResult) return null;
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 2000);
+  };
 
   const handleSaveImage = useCallback(async () => {
     if (captureRef.current === null) return;
@@ -55,16 +67,19 @@ export default function ResultDashboard({ onBack }: ResultDashboardProps) {
   }, [currentProfile]);
 
   const handleSave = () => {
-    if (currentProfile.id === 'temp') {
-      addProfile({
-        name: currentProfile.name,
-        gender: currentProfile.gender,
-        isLunar: currentProfile.isLunar,
-        birthDate: currentProfile.birthDate,
-        birthTime: currentProfile.birthTime,
-      });
-      alert('저장되었습니다.');
+    if (isAlreadySaved) {
+      showToast('이미 저장된 사주입니다.');
+      return;
     }
+    
+    addProfile({
+      name: currentProfile.name,
+      gender: currentProfile.gender,
+      isLunar: currentProfile.isLunar,
+      birthDate: currentProfile.birthDate,
+      birthTime: currentProfile.birthTime,
+    });
+    showToast('보관함에 저장되었습니다.');
   };
 
   const chartData = Object.entries(currentResult.elementsCount).map(([name, value]) => ({
@@ -94,11 +109,15 @@ export default function ResultDashboard({ onBack }: ResultDashboardProps) {
         </button>
         <h1 className="font-serif font-bold text-lg">{currentProfile.name}님의 사주</h1>
         <div className="flex gap-2">
-          {currentProfile.id === 'temp' && (
-            <button onClick={handleSave} className="p-2 text-stone-500 hover:text-stone-900">
-              <Save size={20} />
-            </button>
-          )}
+          <button 
+            onClick={handleSave} 
+            disabled={isAlreadySaved}
+            className={`p-2 rounded-lg transition-colors ${
+              isAlreadySaved ? 'text-green-600 bg-green-50' : 'text-stone-500 hover:text-stone-900'
+            }`}
+          >
+            {isAlreadySaved ? <Save size={20} className="fill-current" /> : <Save size={20} />}
+          </button>
           <button onClick={() => {
             if (navigator.share) {
               navigator.share({
@@ -107,7 +126,7 @@ export default function ResultDashboard({ onBack }: ResultDashboardProps) {
               }).catch(console.error);
             } else {
               navigator.clipboard.writeText(window.location.href);
-              alert('링크가 복사되었습니다.');
+              showToast('링크가 복사되었습니다.');
             }
           }} className="p-2 text-stone-500 hover:text-stone-900">
             <Share2 size={20} />
@@ -301,6 +320,37 @@ export default function ResultDashboard({ onBack }: ResultDashboardProps) {
           )}
         </button>
       </div>
+      {/* 토스트 알림 */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: 20, x: '-50%' }}
+            className="fixed bottom-24 left-1/2 z-50 px-6 py-3 bg-stone-900 text-white text-sm rounded-full shadow-2xl"
+          >
+            {toastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 이미지 생성 로딩 오버레이 */}
+      <AnimatePresence>
+        {isCapturing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-white/60 backdrop-blur-sm flex items-center justify-center p-6"
+          >
+            <div className="bg-white p-8 rounded-3xl shadow-2xl border border-stone-100 flex flex-col items-center">
+              <div className="w-12 h-12 border-4 border-stone-100 border-t-stone-900 rounded-full animate-spin mb-4" />
+              <p className="font-bold text-stone-900">분석 리포트 생성 중...</p>
+              <p className="text-xs text-stone-400 mt-2 text-center">잠시만 기다려 주시면 <br/>멋진 이미지가 완성됩니다.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
