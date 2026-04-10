@@ -141,7 +141,7 @@ export default function AiInterpretation({ profile, result }: AiInterpretationPr
 
       // 최신 @google/genai SDK 호출 방식 (models 객체 통해 직접 호출)
       const aiResponse = await genAIClient.models.generateContent({
-        model: 'gemma-4-31b-a4b-it', // <-- 31b 버전
+        model: 'gemma-4-31b-it', // <-- 31b 모델로 수정
         contents: prompt
       });
 
