@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, Save, Share2, Image as ImageIcon, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { toPng } from 'html-to-image';
@@ -59,7 +59,6 @@ export default function ResultDashboard({ onBack }: ResultDashboardProps) {
       link.href = dataUrl;
       link.click();
     } catch (err) {
-      console.error('이미지 저장 실패:', err);
       alert('이미지 저장 중 오류가 발생했습니다.');
     } finally {
       setIsCapturing(false);

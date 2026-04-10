@@ -85,7 +85,6 @@ export default function AiInterpretation({ profile, result }: AiInterpretationPr
       const apiKeyFromEnv = import.meta.env.VITE_GEMINI_API_KEY;
       const cleanKey = String(apiKeyFromEnv || '').trim();
 
-      console.log("최종 전달 키 확인:", cleanKey.substring(0, 10) + "...");
 
       if (!cleanKey) {
         throw new Error('VITE_GEMINI_API_KEY is missing or empty.');
