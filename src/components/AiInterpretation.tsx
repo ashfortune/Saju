@@ -83,13 +83,13 @@ export default function AiInterpretation({ profile, result }: AiInterpretationPr
     try {
       const apiKeyFromEnv = import.meta.env.VITE_GEMINI_API_KEY;
       const cleanKey = String(apiKeyFromEnv || '').trim();
-      
+
       console.log("최종 전달 키 확인:", cleanKey.substring(0, 10) + "...");
 
       if (!cleanKey) {
         throw new Error('VITE_GEMINI_API_KEY is missing or empty.');
       }
-      
+
       const sajuData = `
         [사용자 정보]
         이름: ${profile.name}
@@ -113,25 +113,31 @@ export default function AiInterpretation({ profile, result }: AiInterpretationPr
         당신은 사주 명리학 정밀 분석 시스템 [${selectedPersona.title}]입니다.
         이번 분석은 [${selectedPersona.specialty}] 데이터 전용 모드로 진행됩니다.
         
-        입력된 데이터를 고전 명리 이론에 근거하여 기술적이고 논리적으로 분석해주세요.
-        
-        분석 모듈별 중점 연산 항목:
-        ${selectedPersonaId === 'total' ? '- 원국의 조후(調候) 균형 및 오행 상생상극의 흐름에 대한 종합 지표를 도출하세요.' : ''}
-        ${selectedPersonaId === 'money' ? '- 재성(財星)의 통근(通根) 여부 및 용신(用神)을 활용한 경제적 유동성을 계측하세요.' : ''}
-        ${selectedPersonaId === 'career' ? '- 관성(官星)의 건왕함과 적성 지표를 대조하여 사회적 성취 경로를 도출하세요.' : ''}
-        ${selectedPersonaId === 'love' ? '- 인성(印星)의 분포 및 기운의 유통을 바탕으로 사회적 유대 및 귀인운 지표를 연산하세요.' : ''}
+        [분석 대상 데이터]
+        - 제공된 사용자의 사주 원국(팔자) 및 현재 대운/세운 데이터를 바탕으로 연산하세요.
 
-        분석 지침:
-        1. 말투는 객관적이며 신뢰감 있는 전문가 문체(~함, ~로 판단됨, ~으로 분석됨)를 지향하세요.
-        2. "조언", "위로"와 같은 주관적 표현보다 "데이터 상의 경향성", "명리학적 지표"와 같은 객관적 어휘를 사용하세요.
-        3. 마크다운을 활용해 가독성 있게 작성하되, 시스템 리포트 느낌의 정밀한 레이아웃을 구성하세요.
+        [내용 및 어조 지침]
+        1. **전문성과 대중성의 조화**: 학술 용어(원국, 조후, 통근 등)를 사용하되, 반드시 바로 뒤에 일반인이 이해할 수 있는 쉬운 비유를 괄호()로 덧붙이세요.
+        2. **논리적 근거 제시**: 단순히 결과만 말하지 말고, "X라는 글자가 Y와 합(合)을 이루어 ~한 에너지가 발생함"과 같이 명리학적 근거를 한 문장 포함하세요.
+        3. **핵심 요약 제공**: 분석 서두에 [오늘의 한 줄 핵심 요약]을 배치하세요.
+        4. **객관적 실천 가이드**: 추상적인 조언 대신, 행운의 색상, 추천 행동, 주의해야 할 습관 등 구체적인 '개운법'을 제시하세요.
+        
+        [분석 모듈별 중점 연산 항목]
+        ${selectedPersonaId === 'total' ? '- 원국의 조후(온도감) 균형 및 오행의 순환(상생상극) 흐름 종합 분석' : ''}
+        ${selectedPersonaId === 'money' ? '- 재성(財星)의 강약과 식상(食傷, 활동력)의 생재(財) 여부 집중 계측' : ''}
+        ${selectedPersonaId === 'career' ? '- 관성(官星)의 뿌리와 인성(印星)의 보좌를 통한 직업적 성취도 및 적성 도출' : ''}
+        ${selectedPersonaId === 'love' ? '- 일지(日支)의 상태와 관성/재성의 동태를 바탕으로 한 인연법 연산' : ''}
+
+        [형식 지침]
+        - 마크다운(Heading, Bold 등)을 사용하여 가독성 있게 작성하세요.
+        - 섹션별로 적절한 이모지를 사용하여 친근감을 주되, 문체는 정중한 전문가 톤을 유지하세요.
         
         사주 데이터:
         ${sajuData}
       `;
 
       // 최신 SDK 규정에 따라 객체 형태로 전달 시도
-      const genAIClient = new GoogleGenAI({ apiKey: cleanKey }); 
+      const genAIClient = new GoogleGenAI({ apiKey: cleanKey });
 
       // 최신 @google/genai SDK 호출 방식 (models 객체 통해 직접 호출)
       const aiResponse = await genAIClient.models.generateContent({
@@ -170,28 +176,26 @@ export default function AiInterpretation({ profile, result }: AiInterpretationPr
       {!interpretation && !isLoading && !error && (
         <div className="space-y-6">
           <div className="bg-stone-50 p-4 rounded-xl">
-             <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-4 px-1">정밀 분석 모듈 선택</p>
-             <div className="grid grid-cols-2 gap-3">
-                {PERSONAS.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => setSelectedPersonaId(p.id)}
-                    className={`flex flex-col text-left p-4 rounded-xl border transition-all ${
-                      selectedPersonaId === p.id 
-                      ? 'border-stone-900 bg-white shadow-md ring-1 ring-stone-900' 
+            <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-4 px-1">정밀 분석 모듈 선택</p>
+            <div className="grid grid-cols-2 gap-3">
+              {PERSONAS.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => setSelectedPersonaId(p.id)}
+                  className={`flex flex-col text-left p-4 rounded-xl border transition-all ${selectedPersonaId === p.id
+                      ? 'border-stone-900 bg-white shadow-md ring-1 ring-stone-900'
                       : 'border-stone-200 bg-white hover:border-stone-300'
                     }`}
-                  >
-                    <div className={`p-2 rounded-lg mb-3 w-fit ${
-                      selectedPersonaId === p.id ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600'
+                >
+                  <div className={`p-2 rounded-lg mb-3 w-fit ${selectedPersonaId === p.id ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600'
                     }`}>
-                      {p.icon}
-                    </div>
-                    <h3 className="text-xs font-bold text-stone-900 mb-1">{p.title}</h3>
-                    <p className="text-[10px] text-stone-500 leading-tight">{p.specialty}</p>
-                  </button>
-                ))}
-             </div>
+                    {p.icon}
+                  </div>
+                  <h3 className="text-xs font-bold text-stone-900 mb-1">{p.title}</h3>
+                  <p className="text-[10px] text-stone-500 leading-tight">{p.specialty}</p>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="text-center py-4 px-4">
@@ -251,11 +255,12 @@ export default function AiInterpretation({ profile, result }: AiInterpretationPr
           animate={{ opacity: 1 }}
           className="relative"
         >
-          <div className="prose prose-stone max-w-none 
+          <div className="prose prose-sm sm:prose-base prose-stone max-w-none 
             prose-headings:font-serif prose-headings:text-stone-800
             prose-p:text-stone-700 prose-p:leading-relaxed
             prose-strong:text-stone-900 prose-strong:font-bold
-            bg-stone-50/50 p-6 rounded-2xl border border-stone-100"
+            bg-stone-50/50 p-4 sm:p-6 rounded-2xl border border-stone-100
+            break-words overflow-x-hidden"
           >
             <Markdown>{interpretation}</Markdown>
           </div>
