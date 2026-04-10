@@ -1,0 +1,14 @@
+{
+  "子": { "name": "자", "animal": "쥐", "element": "수", "yinYang": "-", "desc": "지혜, 번식력, 예민함, 조심성" },
+  "丑": { "name": "축", "animal": "소", "element": "토", "yinYang": "-", "desc": "근면, 성실, 끈기, 고집" },
+  "寅": { "name": "인", "animal": "호랑이", "element": "목", "yinYang": "+", "desc": "용맹, 리더십, 독립심, 추진력" },
+  "卯": { "name": "묘", "animal": "토끼", "element": "목", "yinYang": "-", "desc": "온순, 이상주의, 예술성, 예민함" },
+  "辰": { "name": "진", "animal": "용", "element": "토", "yinYang": "+", "desc": "이상, 권위, 변화, 스케일" },
+  "巳": { "name": "사", "animal": "뱀", "element": "화", "yinYang": "+", "desc": "지혜, 열정, 완벽주의, 비밀" },
+  "午": { "name": "오", "animal": "말", "element": "화", "yinYang": "-", "desc": "활동성, 사교성, 화려함, 급한 성격" },
+  "未": { "name": "미", "animal": "양", "element": "토", "yinYang": "-", "desc": "온순, 희생, 예술성, 고집" },
+  "申": { "name": "신", "animal": "원숭이", "element": "금", "yinYang": "+", "desc": "재주, 다재다능, 임기응변, 활동성" },
+  "酉": { "name": "유", "animal": "닭", "element": "금", "yinYang": "-", "desc": "정확, 예리, 결단력, 완벽주의" },
+  "戌": { "name": "술", "animal": "개", "element": "토", "yinYang": "+", "desc": "충직, 의리, 책임감, 보수적" },
+  "亥": { "name": "해", "animal": "돼지", "element": "수", "yinYang": "+", "desc": "포용, 여유, 식복, 감수성" }
+}
