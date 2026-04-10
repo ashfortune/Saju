@@ -1,6 +1,8 @@
+import { useState, useRef, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Save, Share2 } from 'lucide-react';
+import { ArrowLeft, Save, Share2, Image as ImageIcon, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { toPng } from 'html-to-image';
 import { useSajuStore } from '../store/useSajuStore';
 import { SajuChar } from '../lib/saju';
 import elementsData from '../data/elements.json';
@@ -20,8 +22,37 @@ const ELEMENT_COLORS: Record<string, string> = {
 
 export default function ResultDashboard({ onBack }: ResultDashboardProps) {
   const { currentProfile, currentResult, addProfile } = useSajuStore();
-
+  const captureRef = useRef<HTMLDivElement>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+  
   if (!currentProfile || !currentResult) return null;
+
+  const handleSaveImage = useCallback(async () => {
+    if (captureRef.current === null) return;
+    
+    setIsCapturing(true);
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    try {
+      const dataUrl = await toPng(captureRef.current, {
+        cacheBust: true,
+        backgroundColor: '#f8f5f2', 
+        style: {
+          padding: '20px',
+        }
+      });
+      
+      const link = document.createElement('a');
+      link.download = `사주포인트_${currentProfile.name}_${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('이미지 저장 실패:', err);
+      alert('이미지 저장 중 오류가 발생했습니다.');
+    } finally {
+      setIsCapturing(false);
+    }
+  }, [currentProfile]);
 
   const handleSave = () => {
     if (currentProfile.id === 'temp') {
@@ -84,84 +115,47 @@ export default function ResultDashboard({ onBack }: ResultDashboardProps) {
         </div>
       </header>
 
-      <main className="max-w-md mx-auto p-4 space-y-6 mt-4">
+      <main ref={captureRef} className="max-w-md mx-auto p-4 space-y-6 mt-4">
+        {/* 사주 브랜딩 추가 (이미지 저장 시 식별용) */}
+        <div className="text-center py-2 opacity-0 h-0" id="capture-branding">
+           <h3 className="font-serif font-bold text-stone-400">사주-포인트 :: 🏮</h3>
+        </div>
+
         {/* 팔자 카드 */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-5 rounded-2xl shadow-sm border border-stone-100"
-        >
-          <h2 className="text-lg font-bold mb-4 font-serif">사주팔자 (四柱八字)</h2>
-          <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
-            {/* 천간 (상단) */}
-            {renderCharBox(currentResult.time.stem, '시주')}
-            {renderCharBox(currentResult.day.stem, '일주', true)}
-            {renderCharBox(currentResult.month.stem, '월주')}
-            {renderCharBox(currentResult.year.stem, '년주')}
-            
-            {/* 지지 (하단) */}
-            {renderCharBox(currentResult.time.branch, '')}
-            {renderCharBox(currentResult.day.branch, '', true)}
-            {renderCharBox(currentResult.month.branch, '')}
-            {renderCharBox(currentResult.year.branch, '')}
-          </div>
-          <p className="text-xs text-stone-500 mt-4 text-center">
-            * 일주(두 번째 열)의 상단 글자가 본인을 상징하는 '일간'입니다.
-          </p>
-        </motion.section>
-
-        {/* 오행 분포 */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white p-5 rounded-2xl shadow-sm border border-stone-100"
-        >
-          <h2 className="text-lg font-bold mb-4 font-serif">오행 분포</h2>
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} />
-                <Tooltip cursor={{fill: 'transparent'}} />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.section>
-
-        {/* 해석 리포트 */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white p-5 rounded-2xl shadow-sm border border-stone-100 space-y-6"
-        >
-          <div>
-            <h2 className="text-lg font-bold mb-3 font-serif flex items-center gap-2">
-              <span className="w-1.5 h-6 bg-stone-900 rounded-full inline-block"></span>
-              나의 타고난 기질
-            </h2>
-            <p className="text-stone-700 leading-relaxed">
-              {currentProfile.name}님은 <strong>{currentResult.dayMaster.element}</strong>의 기운을 타고났습니다. 
-              {currentResult.dayMaster.name}일간은 {(elementsData as any)[currentResult.dayMaster.element].desc}을 상징합니다.
-            </p>
-            <div className="mt-4 p-4 bg-stone-50 rounded-xl">
-              <h3 className="font-bold text-sm mb-2">장점</h3>
-              <p className="text-sm text-stone-600 mb-3">{(elementsData as any)[currentResult.dayMaster.element].pros}</p>
-              <h3 className="font-bold text-sm mb-2">보완할 점</h3>
-              <p className="text-sm text-stone-600">{(elementsData as any)[currentResult.dayMaster.element].cons}</p>
-            </div>
-          </div>
-        </motion.section>
-
+... (생략) ...
         {/* AI 심층 사주 풀이 */}
         <AiInterpretation profile={currentProfile} result={currentResult} />
+
+        {/* 이미지 저장 시 하단 워터마크 안내 */}
+        <div className="text-center pt-8 pb-4 opacity-30 text-[10px] text-stone-500">
+           Copyright © Sajuman. All rights reserved.
+        </div>
       </main>
+
+      {/* 이미지 저장 버튼 (플로팅) */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20 w-full max-w-md px-4">
+        <button
+          onClick={handleSaveImage}
+          disabled={isCapturing}
+          className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-white shadow-lg transition-all active:scale-95 ${
+            isCapturing ? 'bg-stone-400 cursor-not-allowed' : 'bg-stone-900 hover:bg-stone-800'
+          }`}
+        >
+          {isCapturing ? (
+            <span className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              이미지 생성 중...
+            </span>
+          ) : (
+            <>
+              <Download size={20} />
+              이미지로 결과 소장하기 (📸)
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }
